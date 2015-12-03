@@ -1,0 +1,41 @@
+{
+  "name": "smart-limiter",
+  "description": "Smart rate limiter middleware for express",
+  "authors": [
+    "Yan Qing <admin@zensh.com>"
+  ],
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:teambition/smart-limiter.git"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "homepage": "https://github.com/teambition/smart-limiter",
+  "keywords": [
+    "middleware",
+    "ratelimit",
+    "redis"
+  ],
+  "dependencies": {
+    "thunk-ratelimiter": "^2.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.4",
+    "standard": "^5.4.1",
+    "supertest": "^1.1.0",
+    "thunk-mocha": "^1.0.1",
+    "thunk-redis": "^1.2.4",
+    "thunks": "^4.1.0"
+  },
+  "scripts": {
+    "test": "standard && mocha -t 10000 -r thunk-mocha test/index.js"
+  },
+  "files": [
+    "README.md",
+    "index.js"
+  ]
+}
