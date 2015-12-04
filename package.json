@@ -1,10 +1,10 @@
 {
   "name": "smart-limiter",
-  "description": "Smart rate limiter middleware for express",
+  "description": "Smart rate limiter middleware for express.",
   "authors": [
     "Yan Qing <admin@zensh.com>"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "license": "MIT",
   "repository": {
@@ -21,9 +21,10 @@
     "redis"
   ],
   "dependencies": {
-    "thunk-ratelimiter": "^2.0.0"
+    "thunk-ratelimiter": "^2.0.1"
   },
   "devDependencies": {
+    "express": "^4.13.3",
     "mocha": "^2.3.4",
     "standard": "^5.4.1",
     "supertest": "^1.1.0",

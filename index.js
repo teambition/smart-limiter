@@ -14,10 +14,10 @@ module.exports = function smartLimiter (opts) {
   //   policy: opts.max
   // }
 
-  if (!opts || typeof opts.getKey !== 'function') throw new Error('getKey function required')
+  if (!opts || typeof opts.getId !== 'function') throw new Error('getKey function required')
   if (!opts.policy || opts.policy.constructor !== Object) throw new Error('policy required')
 
-  var getKey = opts.getKey
+  var getId = opts.getId
 
   var redis = opts.redis
   if (!redis) redis = []
@@ -36,8 +36,8 @@ module.exports = function smartLimiter (opts) {
   limiter.connect.apply(limiter, redis)
 
   return function limit (req, res, next) {
-    var key = getKey.call(this, req)
-    if (!key) return next()
+    var id = getId.call(this, req)
+    if (!id) return next()
 
     var method = req.method
     var pathname = req.path
@@ -53,18 +53,18 @@ module.exports = function smartLimiter (opts) {
     var args = policy[limitKey]
     if (Array.isArray(args)) args = args.slice()
     else args = [args]
-    args.unshift(key + limitKey)
+    args.unshift(id + limitKey)
 
-    limiter.get(args)(function (err, res) {
+    limiter.get(args)(function (err, limit) {
       if (err) return next(err)
 
-      res.set('X-RateLimit-Limit', res.total)
-      res.set('X-RateLimit-Remaining', res.remaining - 1)
-      res.set('X-RateLimit-Reset', Math.ceil(res.reset / 1000))
+      res.set('X-RateLimit-Limit', limit.total)
+      res.set('X-RateLimit-Remaining', limit.remaining - 1)
+      res.set('X-RateLimit-Reset', Math.ceil(limit.reset / 1000))
 
-      if (res.remaining) return next()
+      if (limit.remaining) return next()
 
-      var after = Math.ceil((res.reset - Date.now()) / 1000)
+      var after = Math.ceil((limit.reset - Date.now()) / 1000)
       res.set('Retry-After', after)
       res.status(429).send('Rate limit exceeded, retry in ' + after + ' seconds')
     })
