@@ -6,15 +6,7 @@
 var Limiter = require('thunk-ratelimiter')
 
 module.exports = function smartLimiter (opts) {
-  // opts = {
-  //   redis: null,
-  //   prefix: opts.prefix,
-  //   getKey: null,
-  //   duration: opts.duration,
-  //   policy: opts.max
-  // }
-
-  if (!opts || typeof opts.getId !== 'function') throw new Error('getKey function required')
+  if (!opts || typeof opts.getId !== 'function') throw new Error('getId function required')
   if (!opts.policy || opts.policy.constructor !== Object) throw new Error('policy required')
 
   var getId = opts.getId
