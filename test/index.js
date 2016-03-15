@@ -291,4 +291,52 @@ describe('smart-limiter', function () {
         })
     })(done)
   })
+
+  it('should remove rate limit data', function (done) {
+    var app = express()
+    var limiter = smartLimiter({
+      redis: redisClient,
+      getId: function (req) {
+        return req.ip
+      },
+      policy: {
+        'GET': [1, 500]
+      }
+    })
+    app.use(limiter)
+    app.use(function (req, res, next) {
+      res.send('Hello')
+      limiter.remove(req, function (err, res) {
+        assert.strictEqual(err, null)
+        assert.strictEqual(res, 1)
+        next()
+      })
+    })
+
+    var server = app.listen()
+    thunk.seq([
+      request(server)
+        .get('/')
+        .expect(200)
+        .expect(function (res) {
+          assert.strictEqual(res.text, 'Hello')
+          assert.strictEqual(res.headers['x-ratelimit-limit'], '1')
+          assert.strictEqual(res.headers['x-ratelimit-remaining'], '0')
+        }),
+      request(server)
+        .get('/')
+        .expect(200)
+        .expect(function (res) {
+          assert.strictEqual(res.headers['x-ratelimit-limit'], '1')
+          assert.strictEqual(res.headers['x-ratelimit-remaining'], '0')
+        }),
+      request(server)
+        .get('/')
+        .expect(200)
+        .expect(function (res) {
+          assert.strictEqual(res.headers['x-ratelimit-limit'], '1')
+          assert.strictEqual(res.headers['x-ratelimit-remaining'], '0')
+        })
+    ])(done)
+  })
 })

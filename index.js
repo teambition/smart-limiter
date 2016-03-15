@@ -26,27 +26,17 @@ module.exports = function smartLimiter (opts) {
   })
 
   limiter.connect.apply(limiter, redis)
+  limit.remove = function (req, callback) {
+    var args = getArgs(req)
+    if (!args) return callback()
+    limiter.remove(args[0])(callback)
+  }
 
-  return function limit (req, res, next) {
-    var id = getId.call(this, req)
-    if (!id) return next()
+  return limit
 
-    var method = req.method
-    var pathname = req.path
-    var limitKey = method + ' ' + pathname
-    if (!policy[limitKey]) {
-      limitKey = pathname
-      if (!policy[limitKey]) {
-        limitKey = method
-        if (!policy[limitKey]) return next()
-      }
-    }
-
-    var args = policy[limitKey]
-    if (Array.isArray(args)) args = args.slice()
-    else args = [args]
-    args.unshift(id + limitKey)
-
+  function limit (req, res, next) {
+    var args = getArgs(req)
+    if (!args) return next()
     limiter.get(args)(function (err, limit) {
       if (err) return next(err)
 
@@ -60,5 +50,27 @@ module.exports = function smartLimiter (opts) {
       res.set('Retry-After', after)
       res.status(429).send('Rate limit exceeded, retry in ' + after + ' seconds')
     })
+  }
+
+  function getArgs (req) {
+    var id = getId.call(req, req)
+    if (!id) return null
+
+    var method = req.method
+    var pathname = req.path
+    var limitKey = method + ' ' + pathname
+    if (!policy[limitKey]) {
+      limitKey = pathname
+      if (!policy[limitKey]) {
+        limitKey = method
+        if (!policy[limitKey]) return null
+      }
+    }
+
+    var args = policy[limitKey]
+    if (Array.isArray(args)) args = args.slice()
+    else args = [args]
+    args.unshift(id + limitKey)
+    return args
   }
 }

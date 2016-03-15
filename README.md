@@ -59,6 +59,22 @@ var smartLimiter = require('smart-limiter')
 
 ### smartLimiter(options)
 
+```js
+var limiter = smartLimiter({
+  redis: thunkRedisClient,
+  duration: 10000,
+  getId: function (req) {
+    return req.ip
+  },
+  policy: {
+    'GET': [3, 5000],
+    'GET /test': [3, 5000, 3, 10000],
+    '/test': 5
+  }
+})
+app.use(limiter)
+```
+
 return a express middleware.
 
 - `options.prefix`: *Optional*, Type: `String`, redis key namespace, default to `LIMIT`.
@@ -91,6 +107,16 @@ return a express middleware.
       '/api/auth': [10, 60000, 5, 120000],
     }
     ```
+
+### limiter.remove(req, callback)
+
+Remove `req`'s rate limit data.
+
+```js
+limiter.remove(req, function (err, res) {
+  console.log(err, res) // null, 1
+})
+```
 
 ## Responses
 
