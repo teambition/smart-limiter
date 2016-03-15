@@ -305,12 +305,14 @@ describe('smart-limiter', function () {
     })
     app.use(limiter)
     app.use(function (req, res, next) {
-      res.send('Hello')
       limiter.remove(req, function (err, res) {
         assert.strictEqual(err, null)
         assert.strictEqual(res, 1)
         next()
       })
+    })
+    app.use(function (req, res) {
+      res.send('Hello')
     })
 
     var server = app.listen()
