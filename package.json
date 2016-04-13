@@ -4,7 +4,7 @@
   "authors": [
     "Yan Qing <admin@zensh.com>"
   ],
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "index.js",
   "license": "MIT",
   "repository": {
@@ -21,19 +21,18 @@
     "redis"
   ],
   "dependencies": {
-    "thunk-ratelimiter": "^2.1.0"
+    "thunk-ratelimiter": "^2.1.1"
   },
   "devDependencies": {
     "express": "^4.13.4",
-    "mocha": "^2.4.5",
     "standard": "^6.0.8",
     "supertest": "^1.2.0",
-    "thunk-mocha": "^1.0.3",
-    "thunk-redis": "^1.5.3",
-    "thunks": "^4.1.4"
+    "thunk-redis": "^1.5.5",
+    "thunks": "^4.1.5",
+    "tman": "^0.6.0"
   },
   "scripts": {
-    "test": "standard && mocha -t 10000 -r thunk-mocha test/index.js"
+    "test": "standard && tman"
   },
   "files": [
     "README.md",

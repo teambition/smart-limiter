@@ -2,8 +2,8 @@
 // **Github:** https://github.com/teambition/smart-limiter
 //
 // **License:** MIT
-/* global describe, it, beforeEach */
 
+var tman = require('tman')
 var assert = require('assert')
 var thunk = require('thunks')()
 var express = require('express')
@@ -13,8 +13,10 @@ var smartLimiter = require('../index')
 
 var redisClient = redis.createClient()
 
-describe('smart-limiter', function () {
-  beforeEach(function (done) {
+tman.suite('smart-limiter', function () {
+  this.timeout(10000)
+
+  tman.beforeEach(function (done) {
     redisClient.keys('*LIMIT:*')(function (err, keys) {
       if (err) throw err
       return thunk.all(keys.map(function (key) {
@@ -23,7 +25,7 @@ describe('smart-limiter', function () {
     })(done)
   })
 
-  it('should throw error with wrong options', function () {
+  tman.it('should throw error with wrong options', function () {
     assert.throws(function () {
       smartLimiter({})
     })
@@ -42,7 +44,7 @@ describe('smart-limiter', function () {
     })
   })
 
-  it('should work without redis options', function () {
+  tman.it('should work without redis options', function () {
     var app = express()
     app.use(smartLimiter({
       duration: 500,
@@ -72,7 +74,7 @@ describe('smart-limiter', function () {
       })
   })
 
-  it('should work with simple options', function (done) {
+  tman.it('should work with simple options', function (done) {
     var app = express()
     app.use(smartLimiter({
       redis: redisClient,
@@ -133,7 +135,7 @@ describe('smart-limiter', function () {
     ])(done)
   })
 
-  it('should work with vary policy', function (done) {
+  tman.it('should work with vary policy', function (done) {
     var app = express()
     app.use(smartLimiter({
       duration: 1000,
@@ -187,7 +189,7 @@ describe('smart-limiter', function () {
     ])(done)
   })
 
-  it('should work with multiple policy', function (done) {
+  tman.it('should work with multiple policy', function (done) {
     var app = express()
     app.use(smartLimiter({
       redis: redisClient,
@@ -292,7 +294,7 @@ describe('smart-limiter', function () {
     })(done)
   })
 
-  it('should remove rate limit data', function (done) {
+  tman.it('should remove rate limit data', function (done) {
     var app = express()
     var limiter = smartLimiter({
       redis: redisClient,
