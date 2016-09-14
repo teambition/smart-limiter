@@ -158,5 +158,5 @@ X-RateLimit-Reset:1449753759
 [travis-url]: https://travis-ci.org/teambition/smart-limiter
 [travis-image]: http://img.shields.io/travis/teambition/smart-limiter.svg
 
-[downloads-url]: https://npmjs.org/package/toa
-[downloads-image]: http://img.shields.io/npm/dm/toa.svg?style=flat-square
+[downloads-url]: https://npmjs.org/package/smart-limiter
+[downloads-image]: http://img.shields.io/npm/dm/smart-limiter.svg?style=flat-square

@@ -40,14 +40,14 @@ module.exports = function smartLimiter (opts) {
     limiter.get(args)(function (err, limit) {
       if (err) return next(err)
 
-      res.set('X-RateLimit-Limit', limit.total)
-      res.set('X-RateLimit-Remaining', limit.remaining - 1)
-      res.set('X-RateLimit-Reset', Math.ceil(limit.reset / 1000))
+      res.set('x-ratelimit-limit', limit.total)
+      res.set('x-ratelimit-remaining', limit.remaining - 1)
+      res.set('x-ratelimit-reset', Math.ceil(limit.reset / 1000))
 
       if (limit.remaining) return next()
 
       var after = Math.ceil((limit.reset - Date.now()) / 1000)
-      res.set('Retry-After', after)
+      res.set('retry-after', after)
       res.status(429).send('Rate limit exceeded, retry in ' + after + ' seconds')
     })
   }
