@@ -21,7 +21,7 @@
     "redis"
   ],
   "dependencies": {
-    "thunk-ratelimiter": "^2.1.5"
+    "thunk-ratelimiter": "^2.2.0"
   },
   "devDependencies": {
     "express": "^4.14.0",

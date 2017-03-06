@@ -41,10 +41,10 @@ module.exports = function smartLimiter (opts) {
       if (err) return next(err)
 
       res.set('x-ratelimit-limit', limit.total)
-      res.set('x-ratelimit-remaining', limit.remaining - 1)
+      res.set('x-ratelimit-remaining', limit.remaining)
       res.set('x-ratelimit-reset', Math.ceil(limit.reset / 1000))
 
-      if (limit.remaining) return next()
+      if (limit.remaining >= 0) return next()
 
       var after = Math.ceil((limit.reset - Date.now()) / 1000)
       res.set('retry-after', after)
