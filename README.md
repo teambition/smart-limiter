@@ -1,6 +1,6 @@
 smart-limiter
 ==========
-Smart rate limiter middleware for express.
+Smart rate limiter middleware for both express and koa.
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
@@ -17,6 +17,8 @@ npm install smart-limiter
 ```
 
 ## Example
+
+### express:
 
 ```js
 'use strict'
@@ -46,6 +48,37 @@ app.use(smartLimiter({
 
 app.use(function (req, res) {
   res.json(res._headers)
+})
+
+app.listen(3000)
+console.log('Start at 3000')
+```
+
+### koa:
+
+```js
+'use strict'
+
+var Koa = require('koa')
+var smartLimiter = require('smart-limiter')
+
+var app = new Koa()
+
+app.use(smartLimiter.koa({
+  redis: 6379,
+  duration: 10000,
+  getId: function (ctx) {
+    return ctx.ip
+  },
+  policy: {
+    'GET': [3, 5000],
+    'GET /test': [3, 5000, 3, 10000],
+    '/test': 5
+  }
+}))
+
+app.use(function * () {
+  this.body = this.headers
 })
 
 app.listen(3000)
@@ -111,7 +144,7 @@ return a express middleware.
 
 ### limiter.remove(req, callback)
 
-Remove `req`'s rate limit data.
+Remove `req`'s rate limit data. Only available when using express middleware.
 
 ```js
 limiter.remove(req, function (err, res) {

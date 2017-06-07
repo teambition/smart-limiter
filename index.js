@@ -3,31 +3,15 @@
 //
 // **License:** MIT
 
-var Limiter = require('thunk-ratelimiter')
+const Limiter = require('thunk-ratelimiter')
 
-module.exports = function smartLimiter (opts) {
-  if (!opts || typeof opts.getId !== 'function') throw new Error('getId function required')
-  if (!opts.policy || opts.policy.constructor !== Object) throw new Error('policy required')
+module.exports = function (opts) {
+  checkOpts(opts)
+  let policy = createPolicy(opts.policy)
+  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
 
-  var getId = opts.getId
-
-  var redis = opts.redis
-  if (!redis) redis = []
-  else if (!Array.isArray(redis)) redis = [redis]
-
-  var policy = Object.create(null)
-  Object.keys(opts.policy).map(function (key) {
-    policy[key] = opts.policy[key]
-  })
-
-  var limiter = new Limiter({
-    prefix: opts.prefix,
-    duration: opts.duration
-  })
-
-  limiter.connect.apply(limiter, redis)
   limit.remove = function (req, callback) {
-    var args = getArgs(req)
+    let args = getArgs(req, opts.getId, policy)
     if (!args) return callback()
     limiter.remove(args[0])(callback)
   }
@@ -35,7 +19,7 @@ module.exports = function smartLimiter (opts) {
   return limit
 
   function limit (req, res, next) {
-    var args = getArgs(req)
+    let args = getArgs(req, opts.getId, policy)
     if (!args) return next()
     limiter.get(args)(function (err, limit) {
       if (err) return next(err)
@@ -46,31 +30,88 @@ module.exports = function smartLimiter (opts) {
 
       if (limit.remaining >= 0) return next()
 
-      var after = Math.ceil((limit.reset - Date.now()) / 1000)
+      let after = Math.ceil((limit.reset - Date.now()) / 1000)
       res.set('retry-after', after)
-      res.status(429).send('Rate limit exceeded, retry in ' + after + ' seconds')
+      res.status(429).send(`Rate limit exceeded, retry in ${after} seconds`)
     })
   }
+}
 
-  function getArgs (req) {
-    var id = getId.call(req, req)
-    if (!id) return null
+module.exports.express = module.exports
 
-    var method = req.method
-    var pathname = req.path
-    var limitKey = method + ' ' + pathname
-    if (!policy[limitKey]) {
-      limitKey = pathname
-      if (!policy[limitKey]) {
-        limitKey = method
-        if (!policy[limitKey]) return null
-      }
-    }
+module.exports.koa = function smartLimiter (opts) {
+  checkOpts(opts)
+  let policy = createPolicy(opts.policy)
+  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
 
-    var args = policy[limitKey]
-    if (Array.isArray(args)) args = args.slice()
-    else args = [args]
-    args.unshift(id + limitKey)
-    return args
+  return function * (next) {
+    let args = getArgs(this, opts.getId, policy)
+    if (!args) return yield next
+    let limit = yield new Promise(function (resolve, reject) {
+      limiter.get(args)(function (err, limit) {
+        if (err) return reject(err)
+        return resolve(limit)
+      })
+    })
+
+    this.set({
+      'x-ratelimit-limit': limit.total,
+      'x-ratelimit-remaining': limit.remaining,
+      'x-ratelimit-reset': Math.ceil(limit.reset / 1000)
+    })
+
+    if (limit.remaining >= 0) return yield next
+
+    let after = Math.ceil((limit.reset - Date.now()) / 1000)
+    this.set('retry-after', after)
+    this.status = 429
+    this.body = `Rate limit exceeded, retry in ${after} seconds`
   }
+}
+
+function checkOpts (opts) {
+  if (!opts || typeof opts.getId !== 'function') throw new Error('getId function required')
+  if (!opts.policy || opts.policy.constructor !== Object) throw new Error('policy required')
+}
+
+function createPolicy (policyOpts) {
+  let policy = Object.create(null)
+  Object.keys(policyOpts).map(function (key) {
+    policy[key] = policyOpts[key]
+  })
+
+  return policy
+}
+
+function createLimiter (redis, prefix, duration) {
+  if (!redis) redis = []
+  else if (!Array.isArray(redis)) redis = [redis]
+
+  let limiter = new Limiter({ prefix, duration })
+
+  limiter.connect.apply(limiter, redis)
+
+  return limiter
+}
+
+function getArgs (req, getId, policy) {
+  let id = getId.call(req, req)
+  if (!id) return null
+
+  let method = req.method
+  let pathname = req.path
+  let limitKey = `${method} ${pathname}`
+  if (!policy[limitKey]) {
+    limitKey = pathname
+    if (!policy[limitKey]) {
+      limitKey = method
+      if (!policy[limitKey]) return null
+    }
+  }
+
+  let args = policy[limitKey]
+  if (Array.isArray(args)) args = args.slice()
+  else args = [args]
+  args.unshift(id + limitKey)
+  return args
 }
