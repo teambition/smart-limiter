@@ -1,6 +1,6 @@
 {
   "name": "smart-limiter",
-  "description": "Smart rate limiter middleware for express.",
+  "description": "Smart rate limiter middleware for both express and koa.",
   "authors": [
     "Yan Qing <admin@zensh.com>"
   ],
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "express": "^4.15.1",
+    "koa": "^1.4.0",
     "standard": "^9.0.0",
     "supertest": "^3.0.0",
     "thunk-redis": "^1.7.3",
