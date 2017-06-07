@@ -3,10 +3,10 @@
 //
 // **License:** MIT
 
-var express = require('express')
-var smartLimiter = require('../index')
+const express = require('express')
+const smartLimiter = require('../index')
 
-var app = express()
+const app = express()
 
 app.use(function (req, res, next) {
   if (req.path !== '/favicon.ico') return next()

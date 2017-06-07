@@ -1,5 +1,5 @@
-smart-limiter
-==========
+# smart-limiter
+
 Smart rate limiter middleware for both express and koa.
 
 [![NPM version][npm-image]][npm-url]
@@ -12,21 +12,21 @@ Smart rate limiter middleware for both express and koa.
 
 ## Installation
 
-```
+```sh
 npm install smart-limiter
 ```
 
 ## Example
 
-### express:
+### express
 
 ```js
 'use strict'
 
-var express = require('express')
-var smartLimiter = require('smart-limiter')
+const express = require('express')
+const smartLimiter = require('smart-limiter')
 
-var app = express()
+const app = express()
 
 app.use(function (req, res, next) {
   if (req.path !== '/favicon.ico') return next()
@@ -54,15 +54,15 @@ app.listen(3000)
 console.log('Start at 3000')
 ```
 
-### koa:
+### koa
 
 ```js
 'use strict'
 
-var Koa = require('koa')
-var smartLimiter = require('smart-limiter')
+const Koa = require('koa')
+const smartLimiter = require('smart-limiter')
 
-var app = new Koa()
+const app = new Koa()
 
 app.use(smartLimiter.koa({
   redis: 6379,
@@ -94,7 +94,7 @@ var smartLimiter = require('smart-limiter')
 ### smartLimiter(options)
 
 ```js
-var limiter = smartLimiter({
+const limiter = smartLimiter({
   redis: thunkRedisClient,
   duration: 10000,
   getId: function (req) {
@@ -156,7 +156,7 @@ limiter.remove(req, function (err, res) {
 
 Example 200 with header fields:
 
-```
+```text
 HTTP/1.1 200 OK
 
 Connection:keep-alive
@@ -171,7 +171,7 @@ X-RateLimit-Reset:1449753721
 
 Example 429 with header fields:
 
-```
+```text
 HTTP/1.1 429 Too Many Requests
 
 Connection:keep-alive

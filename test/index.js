@@ -3,16 +3,16 @@
 //
 // **License:** MIT
 
-var tman = require('tman')
-var assert = require('assert')
-var thunk = require('thunks')()
-var express = require('express')
-var koa = require('koa')
-var request = require('supertest')
-var redis = require('thunk-redis')
-var smartLimiter = require('../index')
+const tman = require('tman')
+const assert = require('assert')
+const thunk = require('thunks')()
+const express = require('express')
+const koa = require('koa')
+const request = require('supertest')
+const redis = require('thunk-redis')
+const smartLimiter = require('../index')
 
-var redisClient = redis.createClient()
+const redisClient = redis.createClient()
 
 tman.suite('smart-limiter', function () {
   this.timeout(10000)
@@ -61,7 +61,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work without redis options', function () {
-        var app = frameworksToTest[frameworkName].constructor()
+        let app = frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 500,
           policy: {
@@ -72,8 +72,8 @@ tman.suite('smart-limiter', function () {
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        var now = Date.now() / 1000
-        var after = (Date.now() + 500) / 1000
+        let now = Date.now() / 1000
+        let after = (Date.now() + 500) / 1000
         return request(app.listen())
           .get('/')
           .expect(200)
@@ -87,7 +87,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with simple options', function (done) {
-        var app = frameworksToTest[frameworkName].constructor()
+        let app = frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
@@ -98,9 +98,9 @@ tman.suite('smart-limiter', function () {
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        var now = Date.now() / 1000
-        var after = (Date.now() + 1000) / 1000
-        var server = app.listen()
+        let now = Date.now() / 1000
+        let after = (Date.now() + 1000) / 1000
+        let server = app.listen()
         thunk.all([
           request(server)
             .get('/')
@@ -144,7 +144,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with vary policy', function (done) {
-        var app = frameworksToTest[frameworkName].constructor()
+        let app = frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 1000,
           redis: redisClient,
@@ -158,7 +158,7 @@ tman.suite('smart-limiter', function () {
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        var server = app.listen()
+        let server = app.listen()
 
         thunk.all([
           request(server)
@@ -194,7 +194,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with multiple policy', function (done) {
-        var app = frameworksToTest[frameworkName].constructor()
+        let app = frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
@@ -205,7 +205,7 @@ tman.suite('smart-limiter', function () {
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        var server = app.listen()
+        let server = app.listen()
         // policy [3, 500]
         thunk.all([
           request(server)
@@ -296,8 +296,8 @@ tman.suite('smart-limiter', function () {
 
       tman.it('should remove rate limit data', function (done) {
         if (frameworkName !== 'express') return done()
-        var app = frameworksToTest[frameworkName].constructor()
-        var limiter = smartLimiter[frameworkName]({
+        let app = frameworksToTest[frameworkName].constructor()
+        let limiter = smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
           policy: {
@@ -314,7 +314,7 @@ tman.suite('smart-limiter', function () {
         })
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        var server = app.listen()
+        let server = app.listen()
         thunk.seq([
           request(server)
             .get('/')
