@@ -61,7 +61,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work without redis options', function () {
-        let app = frameworksToTest[frameworkName].constructor()
+        let app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 500,
           policy: {
@@ -87,7 +87,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with simple options', function (done) {
-        let app = frameworksToTest[frameworkName].constructor()
+        let app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
@@ -144,7 +144,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with vary policy', function (done) {
-        let app = frameworksToTest[frameworkName].constructor()
+        let app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 1000,
           redis: redisClient,
@@ -194,7 +194,7 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with multiple policy', function (done) {
-        let app = frameworksToTest[frameworkName].constructor()
+        let app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,

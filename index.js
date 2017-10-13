@@ -3,6 +3,7 @@
 //
 // **License:** MIT
 
+const thunk = require('thunks').thunk
 const Limiter = require('thunk-ratelimiter')
 
 module.exports = function (opts) {
@@ -21,6 +22,7 @@ module.exports = function (opts) {
   function limit (req, res, next) {
     let args = getArgs(req, opts.getId, policy)
     if (!args) return next()
+
     limiter.get(args)(function (err, limit) {
       if (err) return next(err)
 
@@ -47,13 +49,8 @@ module.exports.koa = function smartLimiter (opts) {
   return function * (next) {
     let args = getArgs(this, opts.getId, policy)
     if (!args) return yield next
-    let limit = yield new Promise(function (resolve, reject) {
-      limiter.get(args)(function (err, limit) {
-        if (err) return reject(err)
-        return resolve(limit)
-      })
-    })
 
+    let limit = yield thunk.promise(limiter.get(args))
     this.set({
       'x-ratelimit-limit': limit.total,
       'x-ratelimit-remaining': limit.remaining,
