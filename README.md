@@ -18,6 +18,37 @@ npm install smart-limiter
 
 ## Example
 
+### koa v2
+
+```js
+'use strict'
+
+const Koa = require('koa')
+const smartLimiter = require('smart-limiter')
+
+const app = new Koa()
+
+app.use(smartLimiter.koav2({
+  redis: 6379,
+  duration: 10000,
+  getId: function (ctx) {
+    return ctx.ip
+  },
+  policy: {
+    'GET': [3, 5000],
+    'GET /test': [3, 5000, 3, 10000],
+    '/test': 5
+  }
+}))
+
+app.use((ctx) => {
+  ctx.body = ctx.headers
+})
+
+app.listen(3000)
+console.log('Start at 3000')
+```
+
 ### express
 
 ```js
@@ -54,7 +85,7 @@ app.listen(3000)
 console.log('Start at 3000')
 ```
 
-### koa
+### koa v1
 
 ```js
 'use strict'

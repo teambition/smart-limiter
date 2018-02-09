@@ -66,6 +66,31 @@ module.exports.koa = function smartLimiter (opts) {
   }
 }
 
+module.exports.koav2 = function (opts) {
+  checkOpts(opts)
+  let policy = createPolicy(opts.policy)
+  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
+
+  return (ctx, next) => {
+    let args = getArgs(ctx, opts.getId, policy)
+    if (!args) return next()
+
+    return thunk.promise(limiter.get(args)).then((limit) => {
+      ctx.set({
+        'x-ratelimit-limit': limit.total,
+        'x-ratelimit-remaining': limit.remaining,
+        'x-ratelimit-reset': Math.ceil(limit.reset / 1000)
+      })
+
+      if (limit.remaining >= 0) return next()
+      let after = Math.ceil((limit.reset - Date.now()) / 1000)
+      ctx.set('retry-after', after)
+      ctx.status = 429
+      ctx.body = `Rate limit exceeded, retry in ${after} seconds`
+    })
+  }
+}
+
 function checkOpts (opts) {
   if (!opts || typeof opts.getId !== 'function') throw new Error('getId function required')
   if (!opts.policy || opts.policy.constructor !== Object) throw new Error('policy required')

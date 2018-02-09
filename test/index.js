@@ -42,9 +42,9 @@ tman.suite('smart-limiter', function () {
       helloMiddleware: function (req, res) { res.send('Hello') },
       getId: function (req) { return req.ip }
     },
-    koa: {
+    koav2: {
       constructor: koa,
-      helloMiddleware: function * () { this.body = 'Hello' },
+      helloMiddleware: function (ctx, next) { ctx.body = 'Hello' },
       getId: function (ctx) { return ctx.ip }
     }
   }
