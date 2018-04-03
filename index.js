@@ -14,7 +14,7 @@ module.exports = function (opts) {
   limit.remove = function (req, callback) {
     let args = getArgs(req, opts.getId, policy)
     if (!args) return callback()
-    limiter.remove(args[0])(callback)
+    thunk(limiter.remove(args[0]))(callback)
   }
 
   return limit
@@ -23,7 +23,7 @@ module.exports = function (opts) {
     let args = getArgs(req, opts.getId, policy)
     if (!args) return next()
 
-    limiter.get(args)(function (err, limit) {
+    thunk(limiter.get(args))(function (err, limit) {
       if (err) return next(err)
 
       res.set('x-ratelimit-limit', limit.total)
@@ -50,7 +50,7 @@ module.exports.koa = function smartLimiter (opts) {
     let args = getArgs(this, opts.getId, policy)
     if (!args) return yield next
 
-    let limit = yield thunk.promise(limiter.get(args))
+    let limit = yield limiter.get(args)
     this.set({
       'x-ratelimit-limit': limit.total,
       'x-ratelimit-remaining': limit.remaining,
