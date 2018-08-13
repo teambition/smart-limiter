@@ -173,7 +173,12 @@ return a express middleware.
     }
     ```
 
+### limiter.get(id, max, duration, max, duration...) => Promise
+
+Return a promise that guarantee a limiter result. it support more `max` and `duration` pairs ad limit policy. The first pairs will be used as default. If some trigger limit, then the limiter will apply the next pair policy.
+
 ### limiter.remove(req, callback)
+### limiter.remove(req) => Promise
 
 Remove `req`'s rate limit data. Only available when using express middleware.
 

@@ -5,21 +5,14 @@
 
 const thunk = require('thunks').thunk
 const Limiter = require('thunk-ratelimiter')
+const slice = Array.prototype.slice
 
 module.exports = function (opts) {
   checkOpts(opts)
   let policy = createPolicy(opts.policy)
   let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
 
-  limit.remove = function (req, callback) {
-    let args = getArgs(req, opts.getId, policy)
-    if (!args) return callback()
-    thunk(limiter.remove(args[0]))(callback)
-  }
-
-  return limit
-
-  function limit (req, res, next) {
+  function middleware (req, res, next) {
     let args = getArgs(req, opts.getId, policy)
     if (!args) return next()
 
@@ -37,6 +30,18 @@ module.exports = function (opts) {
       res.status(429).send(`Rate limit exceeded, retry in ${after} seconds`)
     })
   }
+
+  middleware.get = function (id, max, duration) {
+    return limiter.get(slice.call(arguments))
+  }
+
+  middleware.remove = function (req, callback) {
+    let args = getArgs(req, opts.getId, policy)
+    if (!args) return callback()
+    thunk(limiter.remove(args[0]))(callback)
+  }
+
+  return middleware
 }
 
 module.exports.express = module.exports
@@ -46,7 +51,7 @@ module.exports.koa = function smartLimiter (opts) {
   let policy = createPolicy(opts.policy)
   let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
 
-  return function * (next) {
+  function * middleware (next) {
     let args = getArgs(this, opts.getId, policy)
     if (!args) return yield next
 
@@ -64,6 +69,18 @@ module.exports.koa = function smartLimiter (opts) {
     this.status = 429
     this.body = `Rate limit exceeded, retry in ${after} seconds`
   }
+
+  middleware.get = function (id, max, duration) {
+    return limiter.get(slice.call(arguments))
+  }
+
+  middleware.remove = function (req) {
+    let args = getArgs(req, opts.getId, policy)
+    if (!args) return Promise.resolve()
+    return limiter.remove(args[0])
+  }
+
+  return middleware
 }
 
 module.exports.koav2 = function (opts) {
@@ -71,7 +88,7 @@ module.exports.koav2 = function (opts) {
   let policy = createPolicy(opts.policy)
   let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
 
-  return (ctx, next) => {
+  function middleware (ctx, next) {
     let args = getArgs(ctx, opts.getId, policy)
     if (!args) return next()
 
@@ -89,6 +106,18 @@ module.exports.koav2 = function (opts) {
       ctx.body = `Rate limit exceeded, retry in ${after} seconds`
     })
   }
+
+  middleware.get = function (id, max, duration) {
+    return limiter.get(slice.call(arguments))
+  }
+
+  middleware.remove = function (req) {
+    let args = getArgs(req, opts.getId, policy)
+    if (!args) return Promise.resolve()
+    return limiter.remove(args[0])
+  }
+
+  return middleware
 }
 
 function checkOpts (opts) {
