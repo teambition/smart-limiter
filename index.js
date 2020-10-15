@@ -10,7 +10,7 @@ const slice = Array.prototype.slice
 module.exports = function (opts) {
   checkOpts(opts)
   let policy = createPolicy(opts.policy)
-  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
+  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function middleware (req, res, next) {
     let args = getArgs(req, opts.getId, policy)
@@ -49,7 +49,7 @@ module.exports.express = module.exports
 module.exports.koa = function smartLimiter (opts) {
   checkOpts(opts)
   let policy = createPolicy(opts.policy)
-  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
+  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function * middleware (next) {
     let args = getArgs(this, opts.getId, policy)
@@ -86,7 +86,7 @@ module.exports.koa = function smartLimiter (opts) {
 module.exports.koav2 = function (opts) {
   checkOpts(opts)
   let policy = createPolicy(opts.policy)
-  let limiter = createLimiter(opts.redis, opts.prefix, opts.duration)
+  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function middleware (ctx, next) {
     let args = getArgs(ctx, opts.getId, policy)
