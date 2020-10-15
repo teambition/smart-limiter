@@ -9,11 +9,11 @@ const slice = Array.prototype.slice
 
 module.exports = function (opts) {
   checkOpts(opts)
-  let policy = createPolicy(opts.policy)
-  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
+  const policy = createPolicy(opts.policy)
+  const limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function middleware (req, res, next) {
-    let args = getArgs(req, opts.getId, policy)
+    const args = getArgs(req, opts.getId, policy)
     if (!args) return next()
 
     thunk(limiter.get(args))(function (err, limit) {
@@ -25,7 +25,7 @@ module.exports = function (opts) {
 
       if (limit.remaining >= 0) return next()
 
-      let after = Math.ceil((limit.reset - Date.now()) / 1000)
+      const after = Math.ceil((limit.reset - Date.now()) / 1000)
       res.set('retry-after', after)
       res.status(429).send(`Rate limit exceeded, retry in ${after} seconds`)
     })
@@ -36,7 +36,7 @@ module.exports = function (opts) {
   }
 
   middleware.remove = function (req, callback) {
-    let args = getArgs(req, opts.getId, policy)
+    const args = getArgs(req, opts.getId, policy)
     if (!args) return callback()
     thunk(limiter.remove(args[0]))(callback)
   }
@@ -48,14 +48,14 @@ module.exports.express = module.exports
 
 module.exports.koa = function smartLimiter (opts) {
   checkOpts(opts)
-  let policy = createPolicy(opts.policy)
-  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
+  const policy = createPolicy(opts.policy)
+  const limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function * middleware (next) {
-    let args = getArgs(this, opts.getId, policy)
+    const args = getArgs(this, opts.getId, policy)
     if (!args) return yield next
 
-    let limit = yield limiter.get(args)
+    const limit = yield limiter.get(args)
     this.set({
       'x-ratelimit-limit': limit.total,
       'x-ratelimit-remaining': limit.remaining,
@@ -64,7 +64,7 @@ module.exports.koa = function smartLimiter (opts) {
 
     if (limit.remaining >= 0) return yield next
 
-    let after = Math.ceil((limit.reset - Date.now()) / 1000)
+    const after = Math.ceil((limit.reset - Date.now()) / 1000)
     this.set('retry-after', after)
     this.status = 429
     this.body = `Rate limit exceeded, retry in ${after} seconds`
@@ -75,7 +75,7 @@ module.exports.koa = function smartLimiter (opts) {
   }
 
   middleware.remove = function (req) {
-    let args = getArgs(req, opts.getId, policy)
+    const args = getArgs(req, opts.getId, policy)
     if (!args) return Promise.resolve()
     return limiter.remove(args[0])
   }
@@ -85,11 +85,11 @@ module.exports.koa = function smartLimiter (opts) {
 
 module.exports.koav2 = function (opts) {
   checkOpts(opts)
-  let policy = createPolicy(opts.policy)
-  let limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
+  const policy = createPolicy(opts.policy)
+  const limiter = opts.limiter || createLimiter(opts.redis, opts.prefix, opts.duration)
 
   function middleware (ctx, next) {
-    let args = getArgs(ctx, opts.getId, policy)
+    const args = getArgs(ctx, opts.getId, policy)
     if (!args) return next()
 
     return thunk.promise(limiter.get(args)).then((limit) => {
@@ -100,7 +100,7 @@ module.exports.koav2 = function (opts) {
       })
 
       if (limit.remaining >= 0) return next()
-      let after = Math.ceil((limit.reset - Date.now()) / 1000)
+      const after = Math.ceil((limit.reset - Date.now()) / 1000)
       ctx.set('retry-after', after)
       ctx.status = 429
       ctx.body = `Rate limit exceeded, retry in ${after} seconds`
@@ -112,7 +112,7 @@ module.exports.koav2 = function (opts) {
   }
 
   middleware.remove = function (req) {
-    let args = getArgs(req, opts.getId, policy)
+    const args = getArgs(req, opts.getId, policy)
     if (!args) return Promise.resolve()
     return limiter.remove(args[0])
   }
@@ -126,7 +126,7 @@ function checkOpts (opts) {
 }
 
 function createPolicy (policyOpts) {
-  let policy = Object.create(null)
+  const policy = Object.create(null)
   Object.keys(policyOpts).map(function (key) {
     policy[key] = policyOpts[key]
   })
@@ -138,7 +138,7 @@ function createLimiter (redis, prefix, duration) {
   if (!redis) redis = []
   else if (!Array.isArray(redis)) redis = [redis]
 
-  let limiter = new Limiter({ prefix, duration })
+  const limiter = new Limiter({ prefix, duration })
 
   limiter.connect.apply(limiter, redis)
 
@@ -146,11 +146,11 @@ function createLimiter (redis, prefix, duration) {
 }
 
 function getArgs (req, getId, policy) {
-  let id = getId.call(req, req)
+  const id = getId.call(req, req)
   if (!id) return null
 
-  let method = req.method
-  let pathname = req.path
+  const method = req.method
+  const pathname = req.path
   let limitKey = `${method} ${pathname}`
   if (!policy[limitKey]) {
     limitKey = pathname

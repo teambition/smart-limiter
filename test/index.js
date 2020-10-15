@@ -61,19 +61,19 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work without redis options', function () {
-        let app = new frameworksToTest[frameworkName].constructor()
+        const app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 500,
           policy: {
-            'GET': 5
+            GET: 5
           },
           getId: frameworksToTest[frameworkName].getId
         }))
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        let now = Date.now() / 1000
-        let after = (Date.now() + 500) / 1000
+        const now = Date.now() / 1000
+        const after = (Date.now() + 500) / 1000
         return request(app.listen())
           .get('/')
           .expect(200)
@@ -87,20 +87,20 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with simple options', function (done) {
-        let app = new frameworksToTest[frameworkName].constructor()
+        const app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
           policy: {
-            'GET': [3, 1000]
+            GET: [3, 1000]
           }
         }))
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        let now = Date.now() / 1000
-        let after = (Date.now() + 1000) / 1000
-        let server = app.listen()
+        const now = Date.now() / 1000
+        const after = (Date.now() + 1000) / 1000
+        const server = app.listen()
         thunk.all([
           request(server)
             .get('/')
@@ -144,13 +144,13 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with vary policy', function (done) {
-        let app = new frameworksToTest[frameworkName].constructor()
+        const app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           duration: 1000,
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
           policy: {
-            'GET': [5, 500],
+            GET: [5, 500],
             'GET /path1': [4, 500],
             '/path2': 3
           }
@@ -158,7 +158,7 @@ tman.suite('smart-limiter', function () {
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        let server = app.listen()
+        const server = app.listen()
 
         thunk.all([
           request(server)
@@ -194,18 +194,18 @@ tman.suite('smart-limiter', function () {
       })
 
       tman.it('should work with multiple policy', function (done) {
-        let app = new frameworksToTest[frameworkName].constructor()
+        const app = new frameworksToTest[frameworkName].constructor()
         app.use(smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
           policy: {
-            'GET': [3, 500, 2, 1000, 1, 1000]
+            GET: [3, 500, 2, 1000, 1, 1000]
           }
         }))
 
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        let server = app.listen()
+        const server = app.listen()
         // policy [3, 500]
         thunk.all([
           request(server)
@@ -296,12 +296,12 @@ tman.suite('smart-limiter', function () {
 
       tman.it('should remove rate limit data', function (done) {
         if (frameworkName !== 'express') return done()
-        let app = frameworksToTest[frameworkName].constructor()
-        let limiter = smartLimiter[frameworkName]({
+        const app = frameworksToTest[frameworkName].constructor()
+        const limiter = smartLimiter[frameworkName]({
           redis: redisClient,
           getId: frameworksToTest[frameworkName].getId,
           policy: {
-            'GET': [1, 500]
+            GET: [1, 500]
           }
         })
         app.use(limiter)
@@ -314,7 +314,7 @@ tman.suite('smart-limiter', function () {
         })
         app.use(frameworksToTest[frameworkName].helloMiddleware)
 
-        let server = app.listen()
+        const server = app.listen()
         thunk.seq([
           request(server)
             .get('/')

@@ -20,7 +20,7 @@ app.use(smartLimiter({
     return req.ip
   },
   policy: {
-    'GET': [3, 5000],
+    GET: [3, 5000],
     'GET /test': [3, 5000, 3, 10000],
     '/test': 5
   }
